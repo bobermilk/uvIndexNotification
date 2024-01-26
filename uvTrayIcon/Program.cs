@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Drawing;
+using System.Globalization;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Newtonsoft.Json;
 using uvTrayIcon;
@@ -15,9 +15,9 @@ namespace uvTrayIcon
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new TaskbarIcon());
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Application.Run(new TaskbarIcon());
         }
     }
 }
@@ -25,6 +25,7 @@ namespace uvTrayIcon
 public class TaskbarIcon : ApplicationContext
 {
     public static NotifyIcon trayIcon;
+    private static System.Threading.Timer timer;
     public TaskbarIcon ()
     {
         // Initialize Tray Icon
@@ -37,62 +38,40 @@ public class TaskbarIcon : ApplicationContext
             Visible = true,
             
         };
+            
         new Thread(() =>
         {
             Thread.CurrentThread.IsBackground = true;
             #if DEBUG
-            AttachConsole(-2);
+            AttachConsole(-1);
             #endif
-            while (true)
-            {
-                // when is the next update
-                var timeOfDay = DateTime.Now.TimeOfDay;
-                var nextHour = Math.Ceiling(timeOfDay.TotalHours);
-
-                if (nextHour > 19 || nextHour < 7)
-                {
-                    nextHour = 7; // the api only has data from 7am-7pm, let's wait for tmr 7am
-                    // display offline icon when 7pm data ends
-                    Task.Delay(TimeSpan.FromMilliseconds(3600000)).ContinueWith(task => OfflineTrayIcon());
-                } else {
-                    // within api operating hours, we show the current hour index (even though its not freshly updated)
-                    Update(false);
-                }
-                
-                // we wait till the next time where api will be updated to start checking for changes every second
-                var nextFullHour = TimeSpan.FromHours(nextHour);
-                var nextUpdate = (nextFullHour - timeOfDay);
-                var delta = nextUpdate.TotalMilliseconds;
-                #if DEBUG
-                Console.WriteLine("Next update in "+nextUpdate);
-                Console.WriteLine("===================================================");
-                #endif
-                Thread.Sleep((int) Math.Ceiling(delta));
-
-                /*
-                 * start timer to fetch data from NEA
-                 * nvm timer wont work cuz the request duration is indeterminate
-                System.Timers.Timer checkApiTimer = new System.Timers.Timer();
-                checkApiTimer.Elapsed += new ElapsedEventHandler(CheckApiEvent);
-                checkApiTimer.Interval = 1000;
-                checkApiTimer.Enabled = true;
-                */
-                
-                // it's the start of the next hour, within api operation hours, lets watch for changes
-                Update(true);
-            }
+            Alarm();
 
         }).Start();
 
     }
 
-    /*
-    private static void CheckApiEvent(object source, ElapsedEventArgs e)
+    
+    private void Alarm()
     {
-    }
-    */
+        DateTime now = DateTime.Now;
+        TimeSpan alarm = new TimeSpan(7, 0, 0);
+        TimeSpan nextTimerWait = alarm - now.TimeOfDay;
+        if (nextTimerWait <= TimeSpan.Zero)
+        {
+            // after 7am
+            Update();
+            timer = new System.Threading.Timer(x => { Update(); }, null, DateTime.Now.AddDays(1).TimeOfDay+nextTimerWait, Timeout.InfiniteTimeSpan);
+        }
+        else
+        {
+            // before 7am
+            timer = new System.Threading.Timer(x => { Alarm(); }, null, nextTimerWait, Timeout.InfiniteTimeSpan);
+        }
 
-    public static bool Update(bool watchForChanges)
+    }
+
+    public static bool Update()
     {
         using (WebClient wc = new WebClient())
         {
@@ -102,37 +81,44 @@ public class TaskbarIcon : ApplicationContext
             #endif
             while (true)
             {
+                DateTime now = DateTime.Now;
+                if (now.Hour > 19 || now.Hour < 7)
+                {
+                    OfflineTrayIcon();
+                    return true;
+                }
                 try
                 {
                     ServicePointManager.Expect100Continue = true;
                     ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-                    var json = wc.DownloadString("https://api.data.gov.sg/v1/environment/uv-index");
-                    dynamic response = JsonConvert.DeserializeObject<RootObject>(json);
+                    
+                    wc.Headers["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.3";
+                    var json = wc.DownloadString("https://www.nea.gov.sg/api/ultraviolet/getall/"+Guid.NewGuid());
+                    dynamic response = JsonConvert.DeserializeObject<Root>(json);
                     #if DEBUG
                     queryCnt++;
                     #endif
-                    var latestTimestamp = response.Root[0].LatestTimestamp;
-                    // their timestamp is ISO 8601
-                    DateTime dt = DateTime.Parse(latestTimestamp, null, System.Globalization.DateTimeStyles.RoundtripKind);
-                    if (dt.Hour > Globals.CurrentHour || !watchForChanges)
+                    var latestTimestamp = response.CurrentUV.Hour;
+                    //DateTime dt = DateTime.Parse(latestTimestamp, null, System.Globalization.DateTimeStyles.RoundtripKind);
+                    if (Globals.LatestTimestamp != latestTimestamp)
                     {
-                        Globals.CurrentHour = dt.Hour;
-                        string currentTimestamp = response.Root[0].DataPoints[0].IndexTimestamp;
-                        int currentUvIndex = response.Root[0].DataPoints[0].IndexValue;
+                        Globals.LatestTimestamp = latestTimestamp;
+                        DateTime currentTimestamp = DateTime.ParseExact(response.CurrentUV.Hour, "h:mmtt", CultureInfo.InvariantCulture); //4:00pm
+                        int currentUvIndex = response.CurrentUV.Value;
                         UpdateTrayIcon(currentUvIndex, currentTimestamp);
                         #if DEBUG
-                        Console.WriteLine("\nUpdated at "+currentTimestamp+" with "+queryCnt+" queries");
+                        Console.WriteLine("\nReading for "+currentTimestamp+ " updated at " + DateTime.Now +" with "+queryCnt+" queries");
+                        Console.WriteLine("===================================================");
+                        queryCnt = 0;
                         #endif
-                        return true;
                     }
-                    Thread.Sleep(1000);
+                    Thread.Sleep(10000); // we're just going to be dumb and check once every minute
                 }
                 catch (Exception e)
                 {
                     #if DEBUG
                     Console.WriteLine(e);
                     #endif
-                    return false;
                 }
             }
         }
@@ -143,20 +129,20 @@ public class TaskbarIcon : ApplicationContext
     [DllImport("kernel32.dll")]
     private static extern bool AttachConsole(int pid);
     
-    private static void UpdateTrayIcon(int currentUvIndex, string indexTimestamp)
+    private static void UpdateTrayIcon(int currentUvIndex, DateTime currentTimestamp)
     {
         trayIcon.Icon = new Icon("assets/" + currentUvIndex + ".ico");
-        if (currentUvIndex > 11)
+        if (currentUvIndex > 13)
         {
-            trayIcon.Icon = new Icon("assets/11.ico");
-            trayIcon.Text = "Last updated: " + indexTimestamp;
+            trayIcon.Icon = new Icon("assets/13.ico");
+            trayIcon.Text = "Last updated: " + currentTimestamp;
             trayIcon.Visible = true;
         }
     }
 
-    private void OfflineTrayIcon(){
+    public static void OfflineTrayIcon(){
         trayIcon.Icon = new Icon("assets/offline.ico");
-        trayIcon.Text = "I't past 7pm sunset, wait for 7am sunrise";
+        trayIcon.Text = "It's past 7pm sunset, wait for 7am sunrise";
         trayIcon.Visible = true;
     }
 
@@ -171,5 +157,5 @@ public class TaskbarIcon : ApplicationContext
 
 public static class Globals
 {
-    public static int CurrentHour = -1;
+    public static string LatestTimestamp = null;
 }

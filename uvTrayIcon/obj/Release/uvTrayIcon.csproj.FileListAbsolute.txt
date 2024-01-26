@@ -1,0 +1,12 @@
+C:\Users\milk\Desktop\projects\uvtrayicon\uvTrayIcon\uvTrayIcon\bin\Release\uvTrayIcon.exe.config
+C:\Users\milk\Desktop\projects\uvtrayicon\uvTrayIcon\uvTrayIcon\bin\Release\uvTrayIcon.exe
+C:\Users\milk\Desktop\projects\uvtrayicon\uvTrayIcon\uvTrayIcon\bin\Release\uvTrayIcon.pdb
+C:\Users\milk\Desktop\projects\uvtrayicon\uvTrayIcon\uvTrayIcon\bin\Release\Newtonsoft.Json.dll
+C:\Users\milk\Desktop\projects\uvtrayicon\uvTrayIcon\uvTrayIcon\bin\Release\Newtonsoft.Json.xml
+C:\Users\milk\Desktop\projects\uvtrayicon\uvTrayIcon\uvTrayIcon\obj\Release\uvTrayIcon.csproj.AssemblyReference.cache
+C:\Users\milk\Desktop\projects\uvtrayicon\uvTrayIcon\uvTrayIcon\obj\Release\uvTrayIcon.Properties.Resources.resources
+C:\Users\milk\Desktop\projects\uvtrayicon\uvTrayIcon\uvTrayIcon\obj\Release\uvTrayIcon.csproj.GenerateResource.cache
+C:\Users\milk\Desktop\projects\uvtrayicon\uvTrayIcon\uvTrayIcon\obj\Release\uvTrayIcon.csproj.CoreCompileInputs.cache
+C:\Users\milk\Desktop\projects\uvtrayicon\uvTrayIcon\uvTrayIcon\obj\Release\uvTrayIcon.csproj.CopyComplete
+C:\Users\milk\Desktop\projects\uvtrayicon\uvTrayIcon\uvTrayIcon\obj\Release\uvTrayIcon.exe
+C:\Users\milk\Desktop\projects\uvtrayicon\uvTrayIcon\uvTrayIcon\obj\Release\uvTrayIcon.pdb
