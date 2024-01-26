@@ -64,7 +64,7 @@ public class TaskbarIcon : ApplicationContext
                 var nextUpdate = (nextFullHour - timeOfDay);
                 var delta = nextUpdate.TotalMilliseconds;
                 #if DEBUG
-                Console.WriteLine("Next update at "+nextUpdate);
+                Console.WriteLine("Next update in "+nextUpdate);
                 Console.WriteLine("===================================================");
                 #endif
                 Thread.Sleep((int) Math.Ceiling(delta));
@@ -121,7 +121,7 @@ public class TaskbarIcon : ApplicationContext
                         int currentUvIndex = response.Root[0].DataPoints[0].IndexValue;
                         UpdateTrayIcon(currentUvIndex, currentTimestamp);
                         #if DEBUG
-                        Console.WriteLine("Updated at "+currentTimestamp+" with "+queryCnt+" queries");
+                        Console.WriteLine("\nUpdated at "+currentTimestamp+" with "+queryCnt+" queries");
                         #endif
                         return true;
                     }
