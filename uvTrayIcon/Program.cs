@@ -143,11 +143,11 @@ public class TaskbarIcon : ApplicationContext
     private static void UpdateTrayIcon(int currentUvIndex, DateTime currentTimestamp)
     {
         trayIcon.Icon = new Icon("assets/" + currentUvIndex + ".ico");
+        trayIcon.Text = "Last updated: " + currentTimestamp;
+        trayIcon.Visible = true;
         if (currentUvIndex > 13)
         {
             trayIcon.Icon = new Icon("assets/13.ico");
-            trayIcon.Text = "Last updated: " + currentTimestamp;
-            trayIcon.Visible = true;
         }
     }
 

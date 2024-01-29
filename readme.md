@@ -14,7 +14,7 @@ Uses the [singapore national environmental agency's api](https://www.nea.gov.sg/
 ## Limitations
 - Every 15 minute interval's reading will have a 15-25 minute delay + 5 seconds on the app's polling time
 
-# Why did you do this?
+# Why?
 - Convenience
 - Sunscreen is expensive
 - Website does not update if you check excessively
