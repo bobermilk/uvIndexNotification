@@ -61,7 +61,7 @@ public class TaskbarIcon : ApplicationContext
         {
             // after 7am
             Update();
-            timer = new System.Threading.Timer(x => { Update(); }, null, DateTime.Now.AddDays(1).TimeOfDay+nextTimerWait, Timeout.InfiniteTimeSpan);
+            timer = new System.Threading.Timer(x => { Update(); }, null, new TimeSpan(24,0,0) + nextTimerWait, Timeout.InfiniteTimeSpan);
         }
         else
         {
@@ -82,7 +82,7 @@ public class TaskbarIcon : ApplicationContext
             while (true)
             {
                 DateTime now = DateTime.Now;
-                if (now.Hour > 19 || now.Hour < 7)
+                if (now.Hour >= 19 || now.Hour < 7)
                 {
                     OfflineTrayIcon();
                     return true;
@@ -121,7 +121,7 @@ public class TaskbarIcon : ApplicationContext
                         else if (now.Minute < 45) { waitDuration = 45 - now.Minute; }
                         else if (now.Minute < 30) { waitDuration = 30 - now.Minute; }
                         else if (now.Minute < 15) { waitDuration = 15 - now.Minute; }
-                        Thread.Sleep(waitDuration*1000);
+                        Thread.Sleep(waitDuration*60000);
                     }
                     Thread.Sleep(5000); // we're just going to be dumb and check once every 5 seconds
                 }
