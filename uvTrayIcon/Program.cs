@@ -109,7 +109,7 @@ public class TaskbarIcon : ApplicationContext
                         int currentUvIndex = response.CurrentUV.Value;
                         UpdateTrayIcon(currentUvIndex, currentTimestamp);
 #if DEBUG
-                        Console.WriteLine("\nReading for " + currentTimestamp + " updated at " + DateTime.Now +
+                        Console.WriteLine("\nReading for " + currentTimestamp + " is " + currentUvIndex + " updated at " + DateTime.Now +
                                           " with " + queryCnt + " queries");
                         Console.WriteLine("===================================================");
                         queryCnt = 0;
@@ -117,10 +117,10 @@ public class TaskbarIcon : ApplicationContext
 
                         int waitDuration=0;
                         // assumption: updates take place every 15 minutes in an hour, so we wait for the next update first
-                        if (now.Minute < 60) { waitDuration = 60 - now.Minute; }
-                        else if (now.Minute < 45) { waitDuration = 45 - now.Minute; }
+                        if (now.Minute < 15) { waitDuration = 15 - now.Minute; }
                         else if (now.Minute < 30) { waitDuration = 30 - now.Minute; }
-                        else if (now.Minute < 15) { waitDuration = 15 - now.Minute; }
+                        else if (now.Minute < 45) { waitDuration = 45 - now.Minute; }
+                        else if (now.Minute < 60) { waitDuration = 60 - now.Minute; }
                         Thread.Sleep(waitDuration*60000);
                     }
                     Thread.Sleep(5000); // we're just going to be dumb and check once every 5 seconds
