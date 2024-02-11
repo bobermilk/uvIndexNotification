@@ -1,6 +1,8 @@
 # uvTrayIcon
 Uses the [singapore national environmental agency's api](https://www.nea.gov.sg/corporate-functions/weather/ultraviolet-index) to display the uv index on your taskbar!
 
+v2 is just v1 code but done on one computer and updates will be announced by the server, client will just display the results. I'll get to it eventually :p
+
 # Instructions
 ## keep in taskbar
 1. launch the app and drag the uv icon to the taskbar
